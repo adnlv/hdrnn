@@ -12,8 +12,8 @@ set(RELEASE_COMPILE_OPTIONS ${COMPILE_OPTIONS} -O3 -Werror)
 
 target_compile_options(hdrnn
         PRIVATE
-        $<$<AND:$<CONFIG:Debug>,$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>>>:${DEBUG_COMPILE_OPTIONS}>
-        $<$<AND:$<CONFIG:Debug>,$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>>>:${RELEASE_COMPILE_OPTIONS}>
+        $<$<AND:$<CONFIG:Debug>,$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>>>:$<JOIN:${DEBUG_COMPILE_OPTIONS},;>>
+        $<$<AND:$<CONFIG:Release>,$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>>>:$<JOIN:${RELEASE_COMPILE_OPTIONS},;>>
 )
 
 set(ASSETS_SOURCE_DIRECTORY "${CMAKE_SOURCE_DIR}/assets")
