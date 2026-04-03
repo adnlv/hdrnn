@@ -15,3 +15,11 @@ target_compile_options(hdrnn
         $<$<AND:$<CONFIG:Debug>,$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>>>:${DEBUG_COMPILE_OPTIONS}>
         $<$<AND:$<CONFIG:Debug>,$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>>>:${RELEASE_COMPILE_OPTIONS}>
 )
+
+set(ASSETS_SOURCE_DIRECTORY "${CMAKE_SOURCE_DIR}/assets")
+set(ASSETS_LINK_DIRECTORY "${CMAKE_BINARY_DIR}/assets")
+
+add_custom_command(TARGET hdrnn POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E create_symlink ${ASSETS_SOURCE_DIRECTORY} ${ASSETS_LINK_DIRECTORY}
+        COMMENT "Creating symbolic link to assets"
+)
