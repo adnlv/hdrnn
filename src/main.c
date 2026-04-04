@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 #include "dataset.h"
 
@@ -24,6 +26,17 @@ int main(void)
         printf("%u%s", ds.y[i], (i + 1) % 25 == 0 ? "\n" : ", ");
 
     printf("First normalized image:\n");
+    for (size_t i = 0; i < ds.n; ++i)
+        printf("%.1f%s", ds.x[i], (i + 1) % 14 == 0 ? "\n" : ", ");
+
+    srand(time(NULL));
+    ds_shuffle(&ds);
+
+    printf("First shuffled 50 labels:\n");
+    for (size_t i = 0; i < 50; ++i)
+        printf("%u%s", ds.y[i], (i + 1) % 25 == 0 ? "\n" : ", ");
+
+    printf("First normalized image after shuffle:\n");
     for (size_t i = 0; i < ds.n; ++i)
         printf("%.1f%s", ds.x[i], (i + 1) % 14 == 0 ? "\n" : ", ");
 

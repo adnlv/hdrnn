@@ -141,3 +141,34 @@ void ds_free(struct dataset *ds)
     free(ds->y);
     memset(ds, 0, sizeof(struct dataset));
 }
+
+int ds_shuffle(struct dataset *ds)
+{
+    const size_t stride = sizeof(float) * ds->n;
+    float *buf = NULL;
+
+    if (ds->c <= 1)
+        return 0;
+
+    buf = malloc(sizeof(float) * ds->n);
+    if (buf == NULL)
+        return -1;
+
+    for (size_t i = ds->c - 1; i > 0; --i) {
+        const size_t r = rand() % (i + 1);
+        float *xi = ds->x + i * ds->n;
+        float *xr = ds->x + r * ds->n;
+        uint8_t tmp;
+
+        memcpy(buf, xi, stride);
+        memcpy(xi, xr, stride);
+        memcpy(xr, buf, stride);
+
+        tmp = ds->y[i];
+        ds->y[i] = ds->y[r];
+        ds->y[r] = tmp;
+    }
+
+    free(buf);
+    return 0;
+}

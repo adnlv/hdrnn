@@ -17,4 +17,6 @@ extern int ds_load_mnist_images(const char *filename, struct dataset *ds);
 
 extern void ds_free(struct dataset *ds);
 
+extern int ds_shuffle(struct dataset *ds);
+
 #endif // HDRNN_DATASET_H
