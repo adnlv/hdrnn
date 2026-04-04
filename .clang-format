@@ -23,7 +23,7 @@ BreakBeforeBinaryOperators: All
 BreakBeforeBraces: Custom
 BreakConstructorInitializers: AfterColon
 BreakConstructorInitializersBeforeComma: false
-ColumnLimit: 79
+ColumnLimit: 78
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
 ConstructorInitializerIndentWidth: 2
 ContinuationIndentWidth: 8
@@ -45,6 +45,7 @@ MaxEmptyLinesToKeep: 1
 NamespaceIndentation: All
 PenaltyBreakBeforeFirstCallParameter: 100
 SortIncludes: true
+IncludeBlocks: Regroup
 SpaceAfterCStyleCast: true
 SpaceAfterTemplateKeyword: false
 SpaceBeforeRangeBasedForLoopColon: false

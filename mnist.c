@@ -3,13 +3,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static uint32_t bytes_buf_to_u32(const uint8_t *const buf)
+static uint32_t bytes_buf_to_u32(const uint8_t *buf)
 {
     return (uint32_t) buf[0] << 24 | (uint32_t) buf[1] << 16
            | (uint32_t) buf[2] << 8 | (uint32_t) buf[3];
 }
 
-int mnist_load_labels(const char *const filename, mnist_labels_t *const labels)
+int mnist_load_labels(const char *filename, struct mnist_labels *labels)
 {
     FILE *file;
     size_t read;
@@ -20,7 +20,7 @@ int mnist_load_labels(const char *const filename, mnist_labels_t *const labels)
         goto FAIL;
     }
 
-    labels->count = 0;
+    labels->cnt = 0;
     labels->data = NULL;
 
     file = fopen(filename, "rb");
@@ -58,7 +58,7 @@ int mnist_load_labels(const char *const filename, mnist_labels_t *const labels)
         goto FREE_DATA;
     }
 
-    labels->count = count;
+    labels->cnt = count;
     labels->data = data;
 
     fclose(file);
@@ -72,7 +72,7 @@ FAIL:
     return -1;
 }
 
-void mnist_free_labels(mnist_labels_t *const labels)
+void mnist_free_labels(struct mnist_labels *labels)
 {
     if (labels == NULL) {
         return;
@@ -81,10 +81,10 @@ void mnist_free_labels(mnist_labels_t *const labels)
     free(labels->data);
 
     labels->data = NULL;
-    labels->count = 0;
+    labels->cnt = 0;
 }
 
-int mnist_load_images(const char *const filename, mnist_images_t *const images)
+int mnist_load_images(const char *filename, struct mnist_images *images)
 {
     FILE *file;
     size_t read;
@@ -96,8 +96,8 @@ int mnist_load_images(const char *const filename, mnist_images_t *const images)
         goto FAIL;
     }
 
-    images->images_count = 0;
-    images->image_length = 0;
+    images->cnt = 0;
+    images->len = 0;
     images->data = NULL;
 
     file = fopen(filename, "rb");
@@ -166,8 +166,8 @@ int mnist_load_images(const char *const filename, mnist_images_t *const images)
         goto FREE_DATA;
     }
 
-    images->images_count = images_count;
-    images->image_length = image_length;
+    images->cnt = images_count;
+    images->len = image_length;
     images->data = data;
 
     fclose(file);
@@ -181,7 +181,7 @@ FAIL:
     return -1;
 }
 
-void mnist_free_images(mnist_images_t *const images)
+void mnist_free_images(struct mnist_images *images)
 {
     if (images == NULL) {
         return;
@@ -190,6 +190,6 @@ void mnist_free_images(mnist_images_t *const images)
     free(images->data);
 
     images->data = NULL;
-    images->images_count = 0;
-    images->image_length = 0;
+    images->cnt = 0;
+    images->len = 0;
 }
