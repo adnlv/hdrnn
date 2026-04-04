@@ -12,12 +12,14 @@
 #define MNIST_IMAGE_HEIGHT 28
 #define MNIST_IMAGE_LENGTH 784
 
-typedef struct {
+typedef struct
+{
     uint32_t count;
     uint8_t *data;
 } mnist_labels_t;
 
-typedef struct {
+typedef struct
+{
     uint32_t images_count;
     uint32_t image_length;
     uint8_t *data;

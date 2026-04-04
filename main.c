@@ -4,7 +4,8 @@
 
 #include "mnist.h"
 
-int main(void) {
+int main(void)
+{
     mnist_labels_t labels;
     mnist_images_t images;
 

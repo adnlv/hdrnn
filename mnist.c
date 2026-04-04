@@ -3,13 +3,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-uint32_t bytes_buf_to_u32(const uint8_t *const buf) {
+static uint32_t bytes_buf_to_u32(const uint8_t *const buf)
+{
     return (uint32_t) buf[0] << 24 | (uint32_t) buf[1] << 16
            | (uint32_t) buf[2] << 8 | (uint32_t) buf[3];
 }
 
-int mnist_load_labels(const char *const filename,
-                      mnist_labels_t *const labels) {
+int mnist_load_labels(const char *const filename, mnist_labels_t *const labels)
+{
     FILE *file;
     size_t read;
     uint8_t bytes_buf[4], *data;
@@ -71,7 +72,8 @@ FAIL:
     return -1;
 }
 
-void mnist_free_labels(mnist_labels_t *const labels) {
+void mnist_free_labels(mnist_labels_t *const labels)
+{
     if (labels == NULL) {
         return;
     }
@@ -82,8 +84,8 @@ void mnist_free_labels(mnist_labels_t *const labels) {
     labels->count = 0;
 }
 
-int mnist_load_images(const char *const filename,
-                      mnist_images_t *const images) {
+int mnist_load_images(const char *const filename, mnist_images_t *const images)
+{
     FILE *file;
     size_t read;
     uint8_t bytes_buf[4], *data;
@@ -179,7 +181,8 @@ FAIL:
     return -1;
 }
 
-void mnist_free_images(mnist_images_t *const images) {
+void mnist_free_images(mnist_images_t *const images)
+{
     if (images == NULL) {
         return;
     }
