@@ -5,8 +5,8 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
 add_executable(hdrnn
-        main.c
-        dataset.c)
+        src/main.c
+        src/dataset.c)
 
 set(COMPILE_OPTIONS -Wall -Wextra -Wpedantic)
 set(DEBUG_COMPILE_OPTIONS ${COMPILE_OPTIONS} -g3)
