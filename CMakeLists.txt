@@ -4,7 +4,9 @@ project(hdrnn DESCRIPTION "Hand-written digit recognition neural network" LANGUA
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-add_executable(hdrnn main.c mnist.c)
+add_executable(hdrnn
+        main.c
+        dataset.c)
 
 set(COMPILE_OPTIONS -Wall -Wextra -Wpedantic)
 set(DEBUG_COMPILE_OPTIONS ${COMPILE_OPTIONS} -g3)

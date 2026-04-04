@@ -1,54 +1,32 @@
-#include <errno.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
-#include "mnist.h"
+#include "dataset.h"
 
 int main(void)
 {
-    struct mnist_labels labels;
-    struct mnist_images images;
-    float *normalized_images_data;
+    struct dataset ds;
 
-    errno = 0;
-    if (mnist_load_labels("assets/train-labels-idx1-ubyte", &labels) != 0) {
-        perror(errno != 0 ? strerror(errno) : "Error: mnist_load_labels");
+    if (ds_load_mnist_labels("assets/train-labels-idx1-ubyte", &ds) != 0) {
+        perror("Error: ds_load_mnist_labels");
         return 1;
     }
 
-    printf("labels.count: %u\n", labels.cnt);
-    printf("labels.data[0..10]: ");
-    for (size_t i = 0; i < 10; ++i) {
-        printf("%u%s", labels.data[i], i == 9 ? "\n" : ", ");
-    }
-
-    errno = 0;
-    if (mnist_load_images("assets/train-images-idx3-ubyte", &images) != 0) {
-        perror(errno != 0 ? strerror(errno) : "Error: mnist_load_images");
+    if (ds_load_mnist_images("assets/train-images-idx3-ubyte", &ds) != 0) {
+        perror("Error: ds_load_mnist_images");
         return 1;
     }
 
-    printf("images.images_count: %u\n", images.cnt);
-    printf("images.image_length: %u\n", images.len);
+    printf("Number of images in the dataset: %u\n", ds.c);
+    printf("Length of each image: %u\n", ds.n);
 
-    normalized_images_data = malloc(sizeof(float) * images.cnt * images.len);
-    if (normalized_images_data == NULL) {
-        perror(errno != 0 ? strerror(errno) : "Error: malloc");
-        return 1;
-    }
+    printf("First 50 labels:\n");
+    for (size_t i = 0; i < 50; ++i)
+        printf("%u%s", ds.y[i], (i + 1) % 25 == 0 ? "\n" : ", ");
 
-    for (size_t i = 0; i < images.cnt * images.len; ++i) {
-        normalized_images_data[i] = (float) images.data[i] / 255.0f;
-    }
+    printf("First normalized image:\n");
+    for (size_t i = 0; i < ds.n; ++i)
+        printf("%.1f%s", ds.x[i], (i + 1) % 14 == 0 ? "\n" : ", ");
 
-    printf("normalized_images_data[0..10]: ");
-    for (size_t i = 0; i < MNIST_IMAGE_LENGTH; ++i) {
-        printf("%.2f%s", normalized_images_data[i], i == 9 ? "\n" : ", ");
-    }
-
-    free(normalized_images_data);
-    mnist_free_labels(&labels);
-    mnist_free_images(&images);
+    ds_free(&ds);
     return 0;
 }
