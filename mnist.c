@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 static uint32_t bytes_buf_to_u32(const uint8_t *buf)
 {
@@ -79,9 +80,7 @@ void mnist_free_labels(struct mnist_labels *labels)
     }
 
     free(labels->data);
-
-    labels->data = NULL;
-    labels->cnt = 0;
+    memset(labels, 0, sizeof(struct mnist_labels));
 }
 
 int mnist_load_images(const char *filename, struct mnist_images *images)
@@ -188,8 +187,5 @@ void mnist_free_images(struct mnist_images *images)
     }
 
     free(images->data);
-
-    images->data = NULL;
-    images->cnt = 0;
-    images->len = 0;
+    memset(images, 0, sizeof(struct mnist_images));
 }
