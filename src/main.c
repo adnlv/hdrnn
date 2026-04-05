@@ -3,6 +3,7 @@
 #include <time.h>
 
 #include "dataset.h"
+#include "neunet.h"
 
 int main(void)
 {
@@ -40,6 +41,24 @@ int main(void)
     for (size_t i = 0; i < ds.n; ++i)
         printf("%.1f%s", ds.x[i], (i + 1) % 14 == 0 ? "\n" : ", ");
 
+    struct nn_layer l[3];
+    nn_init_layer(ds.n, 128, &l[0]);
+    nn_init_layer(128, 64, &l[1]);
+    nn_init_layer(64, 10, &l[2]);
+
+    const float *a = nn_forward(l, 3, ds.x);
+    for (size_t i = 0; i < l[2].n_out; ++i)
+        printf("%lu ~ %.2f\n", i, a[i]);
+
+    a = nn_softmax(a, l[2].n_out);
+    for (size_t i = 0; i < l[2].n_out; ++i)
+        printf("softmax: %lu ~ %.2f\n", i, a[i]);
+    printf("argmax: %.2f\n", a[nn_argmax(a, l[2].n_out)]);
+    free((float *) a);
+
+    nn_free_layer(&l[0]);
+    nn_free_layer(&l[1]);
+    nn_free_layer(&l[2]);
     ds_free(&ds);
     return 0;
 }

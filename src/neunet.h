@@ -1,6 +1,7 @@
 #ifndef HDRNN_NEUNET_H
 #define HDRNN_NEUNET_H
 
+#include <stddef.h>
 #include <stdint.h>
 
 struct nn_layer
@@ -22,5 +23,9 @@ extern float *nn_forward_layer(struct nn_layer *layer, const float *x);
 
 extern float *nn_forward(struct nn_layer *layers, uint8_t n_layers,
                          const float *x);
+
+extern size_t nn_argmax(const float *a, size_t n);
+
+extern float *nn_softmax(const float *a, size_t n);
 
 #endif // HDRNN_NEUNET_H

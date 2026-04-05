@@ -16,6 +16,15 @@ static float he_init(uint32_t n_in) { return sqrtf(6.0f / (float) n_in); }
  */
 static float relu(float x) { return x > 0.0f ? x : 0.0f; }
 
+static float max_a(const float *a, size_t n)
+{
+    float max = a[0];
+    for (size_t i = 1; i < n; ++i)
+        max = a[i] > max ? a[i] : max;
+
+    return max;
+}
+
 int nn_init_layer(uint32_t n_in, uint32_t n_out, struct nn_layer *layer)
 {
     // Required to free NULL pointers safely
@@ -85,4 +94,37 @@ float *nn_forward(struct nn_layer *layers, uint8_t n_layers, const float *x)
         x = nn_forward_layer(&layers[i], x);
 
     return (float *) x;
+}
+
+size_t nn_argmax(const float *a, size_t n)
+{
+    size_t i = 0;
+    float max = a[0];
+
+    for (size_t j = 1; j < n; ++j) {
+        if (a[j] > max) {
+            max = a[j];
+            i = j;
+        }
+    }
+
+    return i;
+}
+
+float *nn_softmax(const float *a, size_t n)
+{
+    float sum = 0, m = max_a(a, n);
+    float *out = NULL;
+
+    for (size_t i = 0; i < n; ++i)
+        sum += expf(a[i] - m);
+
+    out = malloc(sizeof(float) * n);
+    if (out == NULL)
+        return NULL;
+
+    for (size_t i = 0; i < n; ++i)
+        out[i] = expf(a[i] - m) / sum;
+
+    return out;
 }
