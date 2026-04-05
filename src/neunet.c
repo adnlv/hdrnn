@@ -10,6 +10,12 @@
  */
 static float he_init(uint32_t n_in) { return sqrtf(6.0f / (float) n_in); }
 
+/**
+ * @brief Rectified linear unit
+ * @see https://en.wikipedia.org/wiki/Rectified_linear_unit
+ */
+static float relu(float x) { return x > 0.0f ? x : 0.0f; }
+
 int nn_init_layer(uint32_t n_in, uint32_t n_out, struct nn_layer *layer)
 {
     // Required to free NULL pointers safely
@@ -29,11 +35,11 @@ int nn_init_layer(uint32_t n_in, uint32_t n_out, struct nn_layer *layer)
     if (layer->b == NULL)
         goto FAIL;
 
-    layer->z = calloc(n_out, sizeof(float));
+    layer->z = malloc(sizeof(float) * n_out);
     if (layer->z == NULL)
         goto FAIL;
 
-    layer->a = calloc(n_out, sizeof(float));
+    layer->a = malloc(sizeof(float) * n_out);
     if (layer->a == NULL)
         goto FAIL;
 
@@ -57,4 +63,26 @@ void nn_free_layer(struct nn_layer *layer)
     free(layer->z);
     free(layer->a);
     memset(layer, 0, sizeof(struct nn_layer));
+}
+
+float *nn_forward_layer(struct nn_layer *layer, const float *x)
+{
+    for (size_t i = 0; i < layer->n_out; ++i) {
+        layer->z[i] = 0.0f;
+        for (size_t j = 0; j < layer->n_in; ++j)
+            layer->z[i] += layer->w[i * layer->n_in + j] * x[j];
+
+        layer->z[i] += layer->b[i];
+        layer->a[i] = relu(layer->z[i]);
+    }
+
+    return layer->a;
+}
+
+float *nn_forward(struct nn_layer *layers, uint8_t n_layers, const float *x)
+{
+    for (uint8_t i = 0; i < n_layers; ++i)
+        x = nn_forward_layer(&layers[i], x);
+
+    return (float *) x;
 }

@@ -18,4 +18,9 @@ extern int nn_init_layer(uint32_t n_in, uint32_t n_out,
 
 extern void nn_free_layer(struct nn_layer *layer);
 
+extern float *nn_forward_layer(struct nn_layer *layer, const float *x);
+
+extern float *nn_forward(struct nn_layer *layers, uint8_t n_layers,
+                         const float *x);
+
 #endif // HDRNN_NEUNET_H
