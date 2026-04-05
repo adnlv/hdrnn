@@ -51,8 +51,9 @@ int main(void)
 
             nn_backprop(l, 3, x, label, lr);
 
-            if ((i + n_samples) % n_samples == 0)
-                printf("sample %lu loss = %f\n", i, nn_loss(a, label));
+            if (i % n_samples == 0)
+                printf("sample %lu loss = %f\n", n_samples + i,
+                       nn_loss(a, label));
         }
 
         printf("epoch %lu:\n", e);
