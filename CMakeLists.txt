@@ -6,7 +6,8 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 
 add_executable(hdrnn
         src/main.c
-        src/dataset.c)
+        src/dataset.c
+        src/neunet.c)
 
 set(COMPILE_OPTIONS -Wall -Wextra -Wpedantic)
 set(DEBUG_COMPILE_OPTIONS ${COMPILE_OPTIONS} -g3)
@@ -17,6 +18,8 @@ target_compile_options(hdrnn
         $<$<AND:$<CONFIG:Debug>,$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>>>:$<JOIN:${DEBUG_COMPILE_OPTIONS},;>>
         $<$<AND:$<CONFIG:Release>,$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>>>:$<JOIN:${RELEASE_COMPILE_OPTIONS},;>>
 )
+
+target_link_libraries(hdrnn PRIVATE m)
 
 set(ASSETS_SOURCE_DIRECTORY "${CMAKE_SOURCE_DIR}/assets")
 set(ASSETS_LINK_DIRECTORY "${CMAKE_BINARY_DIR}/assets")
