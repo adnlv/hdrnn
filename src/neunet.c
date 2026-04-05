@@ -135,7 +135,7 @@ float nn_loss(const float *softmax, size_t i)
  * @param lr learning rate (0...1)
  */
 int nn_backprop(struct nn_layer *layers, uint8_t n_layers, const float *x,
-                size_t y_idx, float lr)
+                size_t y, float lr)
 {
     size_t max = 0; // Max layer size (safe upper bound)
     float *delta = NULL, *delta_prev = NULL;
@@ -158,7 +158,7 @@ int nn_backprop(struct nn_layer *layers, uint8_t n_layers, const float *x,
     for (size_t i = 0; i < out->n_out; ++i)
         delta[i] = out->a[i];
 
-    delta[y_idx] -= 1.0f;
+    delta[y] -= 1.0f;
 
     // Backward
     for (int l = n_layers - 1; l >= 0; --l) {
