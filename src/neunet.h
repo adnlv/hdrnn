@@ -26,8 +26,11 @@ extern float *nn_forward(struct nn_layer *layers, uint8_t n_layers,
 
 extern size_t nn_argmax(const float *a, size_t n);
 
-extern float *nn_softmax(const float *a, size_t n);
+extern void nn_softmax(float *a, size_t n);
 
 extern float nn_loss(const float *softmax, size_t i);
+
+extern int nn_backprop(struct nn_layer *layers, uint8_t n_layers,
+                       const float *x, size_t y_idx, float lr);
 
 #endif // HDRNN_NEUNET_H

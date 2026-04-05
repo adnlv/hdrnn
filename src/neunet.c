@@ -74,24 +74,26 @@ void nn_free_layer(struct nn_layer *layer)
     memset(layer, 0, sizeof(struct nn_layer));
 }
 
-float *nn_forward_layer(struct nn_layer *layer, const float *x)
-{
-    for (size_t i = 0; i < layer->n_out; ++i) {
-        layer->z[i] = 0.0f;
-        for (size_t j = 0; j < layer->n_in; ++j)
-            layer->z[i] += layer->w[i * layer->n_in + j] * x[j];
-
-        layer->z[i] += layer->b[i];
-        layer->a[i] = relu(layer->z[i]);
-    }
-
-    return layer->a;
-}
-
 float *nn_forward(struct nn_layer *layers, uint8_t n_layers, const float *x)
 {
-    for (uint8_t i = 0; i < n_layers; ++i)
-        x = nn_forward_layer(&layers[i], x);
+    for (uint8_t i = 0; i < n_layers; ++i) {
+        struct nn_layer *layer = &layers[i];
+
+        for (size_t j = 0; j < layer->n_out; ++j) {
+            layer->z[j] = 0.0f;
+            for (size_t k = 0; k < layer->n_in; ++k)
+                layer->z[j] += layer->w[j * layer->n_in + k] * x[k];
+
+            layer->z[j] += layer->b[j];
+
+            // Apply ReLU only to hidden layers
+            layer->a[j] = layer->z[j];
+            if (i != n_layers - 1)
+                layer->a[j] = relu(layer->a[j]);
+        }
+
+        x = layer->a;
+    }
 
     return (float *) x;
 }
@@ -111,25 +113,95 @@ size_t nn_argmax(const float *a, size_t n)
     return i;
 }
 
-float *nn_softmax(const float *a, size_t n)
+void nn_softmax(float *a, size_t n)
 {
     float sum = 0, m = max_a(a, n);
-    float *out = NULL;
+
+    for (size_t i = 0; i < n; ++i) {
+        a[i] = expf(a[i] - m);
+        sum += a[i];
+    }
 
     for (size_t i = 0; i < n; ++i)
-        sum += expf(a[i] - m);
-
-    out = malloc(sizeof(float) * n);
-    if (out == NULL)
-        return NULL;
-
-    for (size_t i = 0; i < n; ++i)
-        out[i] = expf(a[i] - m) / sum;
-
-    return out;
+        a[i] /= sum;
 }
 
 float nn_loss(const float *softmax, size_t i)
 {
     return -logf(fmaxf(softmax[i], 1e-7f));
+}
+
+/**
+ * @param lr learning rate (0...1)
+ */
+int nn_backprop(struct nn_layer *layers, uint8_t n_layers, const float *x,
+                size_t y_idx, float lr)
+{
+    size_t max = 0; // Max layer size (safe upper bound)
+    float *delta = NULL, *delta_prev = NULL;
+    struct nn_layer *out = &layers[n_layers - 1];
+
+    for (uint8_t i = 0; i < n_layers; ++i) {
+        if (layers[i].n_out > max)
+            max = layers[i].n_out;
+    }
+
+    delta = malloc(sizeof(float) * max);
+    if (delta == NULL)
+        goto FAIL;
+
+    delta_prev = malloc(sizeof(float) * max);
+    if (delta_prev == NULL)
+        goto FAIL;
+
+    // Output delta
+    for (size_t i = 0; i < out->n_out; ++i)
+        delta[i] = out->a[i];
+
+    delta[y_idx] -= 1.0f;
+
+    // Backward
+    for (int l = n_layers - 1; l >= 0; --l) {
+        struct nn_layer *layer = &layers[l];
+        struct nn_layer *prev = NULL;
+        const float *input = l == 0 ? x : layers[l - 1].a;
+
+        // Update weights
+        for (size_t i = 0; i < layer->n_out; ++i) {
+            for (size_t j = 0; j < layer->n_in; ++j) {
+                layer->w[i * layer->n_in + j] -= lr * delta[i] * input[j];
+            }
+            layer->b[i] -= lr * delta[i];
+        }
+
+        if (l == 0)
+            break;
+
+        // Compute delta_prev
+        prev = &layers[l - 1];
+        for (size_t j = 0; j < prev->n_out; ++j) {
+            delta_prev[j] = 0.0f;
+
+            for (size_t i = 0; i < layer->n_out; ++i) {
+                delta_prev[j] += delta[i] * layer->w[i * layer->n_in + j];
+            }
+
+            // ReLU derivative
+            if (prev->z[j] <= 0.0f)
+                delta_prev[j] = 0.0f;
+        }
+
+        // Copy delta_prev into delta
+        for (size_t j = 0; j < prev->n_out; ++j)
+            delta[j] = delta_prev[j];
+    }
+
+    free(delta);
+    free(delta_prev);
+    return 0;
+
+FAIL:
+    free(delta);
+    free(delta_prev);
+    return -1;
 }

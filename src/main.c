@@ -19,43 +19,51 @@ int main(void)
         return 1;
     }
 
-    printf("Number of images in the dataset: %u\n", ds.c);
-    printf("Length of each image: %u\n", ds.n);
-
-    printf("First 50 labels:\n");
-    for (size_t i = 0; i < 50; ++i)
-        printf("%u%s", ds.y[i], (i + 1) % 25 == 0 ? "\n" : ", ");
-
-    printf("First normalized image:\n");
-    for (size_t i = 0; i < ds.n; ++i)
-        printf("%.1f%s", ds.x[i], (i + 1) % 14 == 0 ? "\n" : ", ");
-
     srand(time(NULL));
     ds_shuffle(&ds);
 
-    printf("First shuffled 50 labels:\n");
-    for (size_t i = 0; i < 50; ++i)
-        printf("%u%s", ds.y[i], (i + 1) % 25 == 0 ? "\n" : ", ");
-
-    printf("First normalized image after shuffle:\n");
-    for (size_t i = 0; i < ds.n; ++i)
-        printf("%.1f%s", ds.x[i], (i + 1) % 14 == 0 ? "\n" : ", ");
-
+    // Initialize network
     struct nn_layer l[3];
     nn_init_layer(ds.n, 128, &l[0]);
     nn_init_layer(128, 64, &l[1]);
     nn_init_layer(64, 10, &l[2]);
 
-    const float *a = nn_forward(l, 3, ds.x);
-    for (size_t i = 0; i < l[2].n_out; ++i)
-        printf("%lu ~ %.2f\n", i, a[i]);
+    size_t label = ds.y[0];
+    const float *x = ds.x;
 
-    a = nn_softmax(a, l[2].n_out);
-    for (size_t i = 0; i < l[2].n_out; ++i)
-        printf("softmax: %lu ~ %.2f\n", i, a[i]);
-    printf("argmax: %.2f\n", a[nn_argmax(a, l[2].n_out)]);
-    free((float *) a);
+    printf("Correct label: %lu\n", label);
 
+    // Before training
+    float *a = nn_forward(l, 3, x);
+    nn_softmax(a, l[2].n_out);
+
+    float loss_before = nn_loss(a, label);
+    size_t pred_before = nn_argmax(a, l[2].n_out);
+
+    printf("Before training:\n");
+    printf("\tloss = %f\n", loss_before);
+    printf("\tprediction = %lu\n", pred_before);
+
+    // Train
+    const int steps = 200;
+    for (int i = 0; i < steps; ++i) {
+        a = nn_forward(l, 3, x);
+        nn_softmax(a, l[2].n_out);
+        nn_backprop(l, 3, x, label, 0.01f);
+    }
+
+    // After training
+    a = nn_forward(l, 3, x);
+    nn_softmax(a, l[2].n_out);
+
+    float loss_after = nn_loss(a, label);
+    size_t pred_after = nn_argmax(a, l[2].n_out);
+
+    printf("After training:\n");
+    printf("\tloss = %f\n", loss_after);
+    printf("\tprediction = %lu\n", pred_after);
+
+    // Cleanup
     nn_free_layer(&l[0]);
     nn_free_layer(&l[1]);
     nn_free_layer(&l[2]);
