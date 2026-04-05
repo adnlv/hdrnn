@@ -128,3 +128,8 @@ float *nn_softmax(const float *a, size_t n)
 
     return out;
 }
+
+float nn_loss(const float *softmax, size_t i)
+{
+    return -logf(fmaxf(softmax[i], 1e-7f));
+}

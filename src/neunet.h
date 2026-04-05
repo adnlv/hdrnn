@@ -28,4 +28,6 @@ extern size_t nn_argmax(const float *a, size_t n);
 
 extern float *nn_softmax(const float *a, size_t n);
 
+extern float nn_loss(const float *softmax, size_t i);
+
 #endif // HDRNN_NEUNET_H
