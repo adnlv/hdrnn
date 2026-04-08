@@ -1,4 +1,4 @@
-# hdrnn - Hand-written digit recognition neural network written in C
+# hdrnn - Hand-written Digit Recognition Neural Network written in C
 
 ```text
 sample 10000 loss = 1.566644
