@@ -1,5 +1,9 @@
 # hdrnn - Hand-written Digit Recognition Neural Network written in C
 
+This is a small, self-contained C11 MNIST trainer with a three-layer fully connected 
+network, forward pass, softmax, and SGD backprop; the training loop runs end-to-end 
+against IDX files under `assets/`, and the README’s log is a sample run.
+
 ```text
 sample 10000 loss = 1.566644
 sample 20000 loss = 0.032247
