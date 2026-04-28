@@ -34,4 +34,6 @@ extern int nn_backprop(struct nn_layer *layers, uint8_t n_layers,
 extern int nn_save(const char *filename, struct nn_layer *layers,
                    uint8_t n_layers);
 
+struct nn_layer *nn_load(const char *filename, uint8_t *n_layers);
+
 #endif // HDRNN_NEUNET_H

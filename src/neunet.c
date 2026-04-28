@@ -222,9 +222,63 @@ int nn_save(const char *filename, struct nn_layer *layers, uint8_t n_layers)
         fwrite(&layer.n_in, sizeof(layer.n_in), 1, fp);
         fwrite(&layer.n_out, sizeof(layer.n_out), 1, fp);
         fwrite(layer.w, sizeof(layer.w[0]), layer.n_in * layer.n_out, fp);
-        fwrite(layer.z, sizeof(layer.z[0]), layer.n_out, fp);
+        fwrite(layer.b, sizeof(layer.b[0]), layer.n_out, fp);
     }
 
     fclose(fp);
     return 0;
+}
+
+struct nn_layer *nn_load(const char *filename, uint8_t *n_layers)
+{
+    FILE *fp = fopen(filename, "rb");
+    if (fp == NULL)
+        return NULL;
+
+    fread(n_layers, sizeof(*n_layers), 1, fp);
+
+    struct nn_layer *layers = calloc(*n_layers, sizeof(struct nn_layer));
+    if (layers == NULL)
+        goto FAIL;
+
+    for (size_t i = 0; i < *n_layers; ++i) {
+        struct nn_layer *layer = &layers[i];
+        fread(&layer->n_in, sizeof(layer->n_in), 1, fp);
+        fread(&layer->n_out, sizeof(layer->n_out), 1, fp);
+
+        const size_t w_count = (size_t) layer->n_in * layer->n_out;
+        const size_t b_count = layer->n_out;
+
+        layer->w = malloc(w_count * sizeof(float));
+        if (layer->w == NULL)
+            goto FAIL;
+
+        fread(layer->w, sizeof(layer->w[0]), w_count, fp);
+
+        layer->b = malloc(b_count * sizeof(float));
+        if (layer->b == NULL)
+            goto FAIL;
+
+        fread(layer->b, sizeof(layer->b[0]), b_count, fp);
+
+        layer->z = malloc(layer->n_out * sizeof(float));
+        if (layer->z == NULL)
+            goto FAIL;
+
+        layer->a = malloc(layer->n_out * sizeof(float));
+        if (layer->a == NULL)
+            goto FAIL;
+    }
+
+    fclose(fp);
+    return layers;
+
+FAIL:
+    free(layers->a);
+    free(layers->z);
+    free(layers->b);
+    free(layers->w);
+    free(layers);
+    fclose(fp);
+    return NULL;
 }
