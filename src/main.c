@@ -8,7 +8,7 @@
 
 int main(void)
 {
-    size_t epochs = 3, n_samples = 10000, limit, label;
+    size_t epochs = 1, n_samples = 10000, limit, label;
     float lr = 0.0005f, *x = NULL, *a = NULL;
     struct dataset ds;
     struct nn_layer l[3];
@@ -74,6 +74,8 @@ int main(void)
     printf("\tloss = %f\n", nn_loss(a, label));
     printf("\tprediction = %" PRIuMAX " (label = %" PRIuMAX ")\n",
            nn_argmax(a, l[2].n_out), label);
+
+    nn_save("model.mdl", l, sizeof(l) / sizeof(l[0]));
 
     // Cleanup
     nn_free_layer(&l[0]);

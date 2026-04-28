@@ -31,4 +31,7 @@ extern float nn_loss(const float *softmax, size_t i);
 extern int nn_backprop(struct nn_layer *layers, uint8_t n_layers,
                        const float *x, size_t y, float lr);
 
+extern int nn_save(const char *filename, struct nn_layer *layers,
+                   uint8_t n_layers);
+
 #endif // HDRNN_NEUNET_H

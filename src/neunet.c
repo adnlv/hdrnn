@@ -1,6 +1,7 @@
 #include "neunet.h"
 
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -204,4 +205,26 @@ FAIL:
     free(delta);
     free(delta_prev);
     return -1;
+}
+
+int nn_save(const char *filename, struct nn_layer *layers, uint8_t n_layers)
+{
+    FILE *fp = fopen(filename, "w+b");
+    if (fp == NULL)
+        return -1;
+
+    // Save the number of layers
+    fwrite(&n_layers, sizeof(n_layers), 1, fp);
+
+    // Save network layers
+    for (size_t i = 0; i < n_layers; ++i) {
+        const struct nn_layer layer = layers[i];
+        fwrite(&layer.n_in, sizeof(layer.n_in), 1, fp);
+        fwrite(&layer.n_out, sizeof(layer.n_out), 1, fp);
+        fwrite(layer.w, sizeof(layer.w[0]), layer.n_in * layer.n_out, fp);
+        fwrite(layer.z, sizeof(layer.z[0]), layer.n_out, fp);
+    }
+
+    fclose(fp);
+    return 0;
 }
