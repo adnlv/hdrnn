@@ -1,3 +1,4 @@
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -52,11 +53,11 @@ int main(void)
             nn_backprop(l, 3, x, label, lr);
 
             if (i % n_samples == 0)
-                printf("sample %lu loss = %f\n", n_samples + i,
+                printf("sample %" PRIuMAX " loss = %f\n", n_samples + i,
                        nn_loss(a, label));
         }
 
-        printf("epoch %lu:\n", e);
+        printf("epoch %" PRIuMAX ":\n", e);
         printf("\tavg loss = %f\n", total_loss / (float) limit);
         printf("\taccuracy = %.2f%%\n",
                100.0f * (double) correct / (double) limit);
@@ -71,8 +72,8 @@ int main(void)
 
     printf("Final sample check:\n");
     printf("\tloss = %f\n", nn_loss(a, label));
-    printf("\tprediction = %lu (label = %lu)\n", nn_argmax(a, l[2].n_out),
-           label);
+    printf("\tprediction = %" PRIuMAX " (label = %" PRIuMAX ")\n",
+           nn_argmax(a, l[2].n_out), label);
 
     // Cleanup
     nn_free_layer(&l[0]);
