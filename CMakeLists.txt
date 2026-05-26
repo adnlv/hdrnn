@@ -17,17 +17,25 @@ add_executable(hdrnn
 	"src/main.c"
 )
 
-set(COMPILE_OPTIONS -Wall -Wextra -Wpedantic)
-set(DEBUG_COMPILE_OPTIONS ${COMPILE_OPTIONS} -g3)
-set(RELEASE_COMPILE_OPTIONS ${COMPILE_OPTIONS} -O3 -Werror)
-
-target_compile_options(hdrnn
-	PRIVATE
-	$<$<AND:$<CONFIG:Debug>,$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>>>:$<JOIN:${DEBUG_COMPILE_OPTIONS},;>>
-	$<$<AND:$<CONFIG:Release>,$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>>>:$<JOIN:${RELEASE_COMPILE_OPTIONS},;>>
+set(WINDOWS_COMPILE_OPTIONS
+	$<$<CONFIG:Debug>:/W4 /ZI> 
+	$<$<CONFIG:Release>:/W4 /O2>
 )
 
+set(UNIX_COMPILE_OPTIONS 
+	$<$<CONFIG:Debug>:-Wall -Wextra -Wpedantic -g3> 
+	$<$<CONFIG:Release>:-Wall -Wextra -Wpedantic -Werror -O3>
+)
+
+set(HDRNN_COMPILE_OPTIONS 
+	$<$<C_COMPILER_ID:MSVC>:${WINDOWS_COMPILE_OPTIONS}>
+	$<$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>>:${UNIX_COMPILE_OPTIONS}>
+)
+
+target_compile_options(hdrnn PRIVATE $<JOIN:${HDRNN_COMPILE_OPTIONS},;>)
+
 if (UNIX)
+	# On Windows the math library is linked automatically.
 	target_link_libraries(hdrnn PRIVATE m)
 
 	# On Windows, you have to manually copy assets folder into the build one,
