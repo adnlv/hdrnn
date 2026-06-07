@@ -10,62 +10,66 @@
 int main(void)
 {
     const char *model_filename = "model.mdl";
-    size_t n_layers = 3, epochs = 5, n_samples = 10000, limit, label;
-    float lr = 0.0005f, *x = NULL, *a = NULL;
-    struct nn_layer *l = NULL;
-    struct dataset ds;
+    size_t num_layers = 3;
+    size_t epochs = 5, num_samples = 10000;
+    size_t limit = 0, label = 0;
+    float learning_rate = 0.0005f;
+    float *pixels_normalized = NULL;
+    float *actived_outputs = NULL;
+    struct nn_layer *layers = NULL;
+    struct dataset dataset;
 
-    if (ds_load_mnist_labels("assets/train-labels-idx1-ubyte", &ds) != 0) {
+    if (ds_load_mnist_labels("assets/train-labels-idx1-ubyte", &dataset) != 0) {
         perror("Error: ds_load_mnist_labels");
         return 1;
     }
 
-    if (ds_load_mnist_images("assets/train-images-idx3-ubyte", &ds) != 0) {
+    if (ds_load_mnist_images("assets/train-images-idx3-ubyte", &dataset) != 0) {
         perror("Error: ds_load_mnist_images");
         return 1;
     }
 
-    limit = ds.c;
+    limit = dataset.c;
 
     srand(time(NULL));
 
     // Try to load model
-    l = nn_load(model_filename, &n_layers);
-    if (l == NULL) {
+    layers = nn_load(model_filename, &num_layers);
+    if (layers == NULL) {
         // Initialize network
-        l = malloc(sizeof(struct nn_layer) * n_layers);
-        assert(l != NULL);
+        layers = malloc(sizeof(struct nn_layer) * num_layers);
+        assert(layers != NULL);
 
-        assert(nn_init_layer(ds.n, 128, &l[0]) == 0);
-        assert(nn_init_layer(128, 64, &l[1]) == 0);
-        assert(nn_init_layer(64, 10, &l[2]) == 0);
+        assert(nn_init_layer(dataset.n, 128, &layers[0]) == 0);
+        assert(nn_init_layer(128, 64, &layers[1]) == 0);
+        assert(nn_init_layer(64, 10, &layers[2]) == 0);
 
-        for (size_t e = 0; e < epochs; ++e) {
+        for (size_t epoch = 0; epoch < epochs; ++epoch) {
             float total_loss = 0.0f;
             size_t correct = 0;
 
-            ds_shuffle(&ds);
+            ds_shuffle(&dataset);
 
-            for (size_t i = 0; i < limit; ++i) {
-                label = ds.y[i];
-                x = ds.x + i * ds.n;
-                a = nn_forward(l, 3, x);
+            for (size_t sample = 0; sample < limit; ++sample) {
+                label = dataset.y[sample];
+                pixels_normalized = dataset.x + sample * dataset.n;
+                actived_outputs = nn_forward(layers, 3, pixels_normalized);
 
-                nn_softmax(a, l[2].n_out);
+                nn_softmax(actived_outputs, layers[2].n_out);
 
-                total_loss += nn_loss(a, label);
+                total_loss += nn_loss(actived_outputs, label);
 
-                if (nn_argmax(a, l[2].n_out) == label)
+                if (nn_argmax(actived_outputs, layers[2].n_out) == label)
                     correct++;
 
-                nn_backprop(l, 3, x, label, lr);
+                nn_backprop(layers, 3, pixels_normalized, label, learning_rate);
 
-                if (i % n_samples == 0)
-                    printf("sample %" PRIuMAX " loss = %f\n", n_samples + i,
-                           nn_loss(a, label));
+                if (sample % num_samples == 0)
+                    printf("sample %" PRIuMAX " loss = %f\n", num_samples + sample,
+                           nn_loss(actived_outputs, label));
             }
 
-            printf("epoch %" PRIuMAX ":\n", e);
+            printf("epoch %" PRIuMAX ":\n", epoch);
             printf("\tavg loss = %f\n", total_loss / (float) limit);
             printf("\taccuracy = %.2f%%\n",
                    100.0f * (double) correct / (double) limit);
@@ -73,24 +77,24 @@ int main(void)
     }
 
     // Final check on first sample
-    x = ds.x;
-    label = ds.y[0];
-    a = nn_forward(l, 3, x);
+    pixels_normalized = dataset.x;
+    label = dataset.y[0];
+    actived_outputs = nn_forward(layers, 3, pixels_normalized);
 
-    nn_softmax(a, l[2].n_out);
+    nn_softmax(actived_outputs, layers[2].n_out);
 
     printf("Final sample check:\n");
-    printf("\tloss = %f\n", nn_loss(a, label));
+    printf("\tloss = %f\n", nn_loss(actived_outputs, label));
     printf("\tprediction = %" PRIuMAX " (label = %" PRIuMAX ")\n",
-           nn_argmax(a, l[2].n_out), label);
+           nn_argmax(actived_outputs, layers[2].n_out), label);
 
-    nn_save(model_filename, l, n_layers);
+    nn_save(model_filename, layers, num_layers);
 
     // Cleanup
-    nn_free_layer(&l[0]);
-    nn_free_layer(&l[1]);
-    nn_free_layer(&l[2]);
-    free(l);
-    ds_free(&ds);
+    nn_free_layer(&layers[0]);
+    nn_free_layer(&layers[1]);
+    nn_free_layer(&layers[2]);
+    free(layers);
+    ds_free(&dataset);
     return 0;
 }
