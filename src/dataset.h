@@ -5,10 +5,10 @@
 
 struct dataset
 {
-    uint32_t c; // Total number of images in the dataset
-    uint32_t n; // Number of pixels in each image
-    float *x; // Array of normalized pixel data
-    uint8_t *y; // Array of corresponding labels
+    uint32_t num_images; // Total number of images in the dataset
+    uint32_t num_pixels; // Number of pixels in each image
+    float *pixel_data; // Array of normalized pixel data
+    uint8_t *labels; // Array of corresponding labels
 };
 
 extern int ds_load_mnist_labels(const char *filename, struct dataset *ds);

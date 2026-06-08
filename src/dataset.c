@@ -50,8 +50,8 @@ int ds_load_mnist_labels(const char *filename, struct dataset *ds)
     if (fread(y, sizeof(uint8_t), c, file) != (size_t) c)
         goto FREE;
 
-    ds->c = c;
-    ds->y = y;
+    ds->num_images = c;
+    ds->labels = y;
 
     fclose(file);
     return 0;
@@ -119,9 +119,9 @@ int ds_load_mnist_images(const char *filename, struct dataset *ds)
     for (size_t i = 0; i < bytes_len; ++i)
         x[i] = (float) bytes[i] / 255.0f;
 
-    ds->c = c;
-    ds->n = n;
-    ds->x = x;
+    ds->num_images = c;
+    ds->num_pixels = n;
+    ds->pixel_data = x;
 
     free(bytes);
     fclose(file);
@@ -137,36 +137,36 @@ FAIL:
 
 void ds_free(struct dataset *ds)
 {
-    free(ds->x);
-    free(ds->y);
+    free(ds->pixel_data);
+    free(ds->labels);
     memset(ds, 0, sizeof(struct dataset));
 }
 
 int ds_shuffle(struct dataset *ds)
 {
-    const size_t stride = sizeof(float) * ds->n;
+    const size_t stride = sizeof(float) * ds->num_pixels;
     float *buf = NULL;
 
-    if (ds->c <= 1)
+    if (ds->num_images <= 1)
         return 0;
 
-    buf = malloc(sizeof(float) * ds->n);
+    buf = malloc(sizeof(float) * ds->num_pixels);
     if (buf == NULL)
         return -1;
 
-    for (size_t i = ds->c - 1; i > 0; --i) {
+    for (size_t i = ds->num_images - 1; i > 0; --i) {
         const size_t r = rand() % (i + 1);
-        float *xi = ds->x + i * ds->n;
-        float *xr = ds->x + r * ds->n;
+        float *xi = ds->pixel_data + i * ds->num_pixels;
+        float *xr = ds->pixel_data + r * ds->num_pixels;
         uint8_t tmp;
 
         memcpy(buf, xi, stride);
         memcpy(xi, xr, stride);
         memcpy(xr, buf, stride);
 
-        tmp = ds->y[i];
-        ds->y[i] = ds->y[r];
-        ds->y[r] = tmp;
+        tmp = ds->labels[i];
+        ds->labels[i] = ds->labels[r];
+        ds->labels[r] = tmp;
     }
 
     free(buf);

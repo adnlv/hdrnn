@@ -30,7 +30,7 @@ int main(void)
         return 1;
     }
 
-    limit = dataset.c;
+    limit = dataset.num_images;
 
     srand(time(NULL));
 
@@ -41,7 +41,7 @@ int main(void)
         layers = malloc(sizeof(struct nn_layer) * num_layers);
         assert(layers != NULL);
 
-        assert(nn_init_layer(dataset.n, 128, &layers[0]) == 0);
+        assert(nn_init_layer(dataset.num_pixels, 128, &layers[0]) == 0);
         assert(nn_init_layer(128, 64, &layers[1]) == 0);
         assert(nn_init_layer(64, 10, &layers[2]) == 0);
 
@@ -52,8 +52,8 @@ int main(void)
             ds_shuffle(&dataset);
 
             for (size_t sample = 0; sample < limit; ++sample) {
-                label = dataset.y[sample];
-                pixels_normalized = dataset.x + sample * dataset.n;
+                label = dataset.labels[sample];
+                pixels_normalized = dataset.pixel_data + sample * dataset.num_pixels;
                 activated_outputs = nn_forward(layers, 3, pixels_normalized);
 
                 nn_softmax(activated_outputs, layers[2].n_out);
@@ -78,8 +78,8 @@ int main(void)
     }
 
     // Final check on first sample
-    pixels_normalized = dataset.x;
-    label = dataset.y[0];
+    pixels_normalized = dataset.pixel_data;
+    label = dataset.labels[0];
     activated_outputs = nn_forward(layers, 3, pixels_normalized);
 
     nn_softmax(activated_outputs, layers[2].n_out);
