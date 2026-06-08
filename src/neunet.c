@@ -21,7 +21,7 @@ static float max_a(const float *a, size_t n)
 {
     float max = a[0];
     for (size_t i = 1; i < n; ++i)
-        max = a[i] > max ? a[i] : max;
+        max = fmaxf(max, a[i]);
 
     return max;
 }
