@@ -11,11 +11,12 @@ int main(void)
 {
     const char *model_filename = "model.mdl";
     size_t num_layers = 3;
-    size_t epochs = 5, num_samples = 10000;
+    size_t num_epochs = 5;
+    size_t num_samples = 10000;
     size_t limit = 0, label = 0;
     float learning_rate = 0.0005f;
     float *pixels_normalized = NULL;
-    float *actived_outputs = NULL;
+    float *activated_outputs = NULL;
     struct nn_layer *layers = NULL;
     struct dataset dataset;
 
@@ -44,7 +45,7 @@ int main(void)
         assert(nn_init_layer(128, 64, &layers[1]) == 0);
         assert(nn_init_layer(64, 10, &layers[2]) == 0);
 
-        for (size_t epoch = 0; epoch < epochs; ++epoch) {
+        for (size_t epoch = 0; epoch < num_epochs; ++epoch) {
             float total_loss = 0.0f;
             size_t correct = 0;
 
@@ -53,20 +54,20 @@ int main(void)
             for (size_t sample = 0; sample < limit; ++sample) {
                 label = dataset.y[sample];
                 pixels_normalized = dataset.x + sample * dataset.n;
-                actived_outputs = nn_forward(layers, 3, pixels_normalized);
+                activated_outputs = nn_forward(layers, 3, pixels_normalized);
 
-                nn_softmax(actived_outputs, layers[2].n_out);
+                nn_softmax(activated_outputs, layers[2].n_out);
 
-                total_loss += nn_loss(actived_outputs, label);
+                total_loss += nn_loss(activated_outputs, label);
 
-                if (nn_argmax(actived_outputs, layers[2].n_out) == label)
+                if (nn_argmax(activated_outputs, layers[2].n_out) == label)
                     correct++;
 
                 nn_backprop(layers, 3, pixels_normalized, label, learning_rate);
 
                 if (sample % num_samples == 0)
                     printf("sample %" PRIuMAX " loss = %f\n", num_samples + sample,
-                           nn_loss(actived_outputs, label));
+                           nn_loss(activated_outputs, label));
             }
 
             printf("epoch %" PRIuMAX ":\n", epoch);
@@ -79,14 +80,14 @@ int main(void)
     // Final check on first sample
     pixels_normalized = dataset.x;
     label = dataset.y[0];
-    actived_outputs = nn_forward(layers, 3, pixels_normalized);
+    activated_outputs = nn_forward(layers, 3, pixels_normalized);
 
-    nn_softmax(actived_outputs, layers[2].n_out);
+    nn_softmax(activated_outputs, layers[2].n_out);
 
     printf("Final sample check:\n");
-    printf("\tloss = %f\n", nn_loss(actived_outputs, label));
+    printf("\tloss = %f\n", nn_loss(activated_outputs, label));
     printf("\tprediction = %" PRIuMAX " (label = %" PRIuMAX ")\n",
-           nn_argmax(actived_outputs, layers[2].n_out), label);
+           nn_argmax(activated_outputs, layers[2].n_out), label);
 
     nn_save(model_filename, layers, num_layers);
 
