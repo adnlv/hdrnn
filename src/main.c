@@ -10,8 +10,8 @@
 int main(void)
 {
     const char *model_filename = "model.mdl";
-    size_t num_layers = 3;
-    size_t num_epochs = 5;
+    uint8_t num_layers = 3;
+    size_t num_epochs = 3;
     size_t num_samples = 10000;
     size_t limit = 0, label = 0;
     float learning_rate = 0.0005f;
@@ -32,7 +32,7 @@ int main(void)
 
     limit = dataset.num_images;
 
-    srand(time(NULL));
+    srand((unsigned int)time(NULL));
 
     // Try to load model
     layers = nn_load(model_filename, &num_layers);
@@ -77,14 +77,15 @@ int main(void)
         }
     }
 
-    // Final check on first sample
-    pixels_normalized = dataset.pixel_data;
-    label = dataset.labels[0];
+    // Final check on a single sample - index controls both pixels and label
+    const size_t sample_idx = 0;
+    pixels_normalized = dataset.pixel_data + sample_idx * dataset.num_pixels;
+    label = dataset.labels[sample_idx];
     activated_outputs = nn_forward(layers, 3, pixels_normalized);
 
     nn_softmax(activated_outputs, layers[2].n_out);
 
-    printf("Final sample check:\n");
+    printf("Final sample check (sample %" PRIuMAX "):\n", sample_idx);
     printf("\tloss = %f\n", nn_loss(activated_outputs, label));
     printf("\tprediction = %" PRIuMAX " (label = %" PRIuMAX ")\n",
            nn_argmax(activated_outputs, layers[2].n_out), label);
@@ -92,9 +93,9 @@ int main(void)
     nn_save(model_filename, layers, num_layers);
 
     // Cleanup
-    nn_free_layer(&layers[0]);
-    nn_free_layer(&layers[1]);
-    nn_free_layer(&layers[2]);
+    for (size_t i = 0; i < num_layers; ++i)
+        nn_free_layer(&layers[i]);
+    
     free(layers);
     ds_free(&dataset);
     return 0;
